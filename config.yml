@@ -1,0 +1,3 @@
+database:
+  mongo:
+    uri: mongodb://heroku_5bf3tpz4:i6ed5j67nbfp4389a1j1tl2oj7@ds253889.mlab.com:53889/heroku_5bf3tpz4

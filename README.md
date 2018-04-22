@@ -4,5 +4,5 @@
 ## Setting up local environment
 1. Install latest python 3.6+ - https://www.python.org/downloads/release/python-365/
 2. Install pycharm - https://www.jetbrains.com/pycharm/download/download-thanks.html?platform=windows
-3. Add the environmental variables:
+3. Add the environmental variables to pycharm run configuration:
    - MONGODB_URI
