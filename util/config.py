@@ -3,7 +3,8 @@ from typing import Dict
 
 from ruamel.yaml import YAML
 
-PROJECT_ROOT: str = dirname(abspath(__file__))
+# the project root directory
+PROJECT_ROOT = dirname(dirname(abspath(__file__)))
 
 def get(key: str) -> object:
     """
@@ -11,8 +12,8 @@ def get(key: str) -> object:
     :param key:
     :return:
     """
-    iter_keys = key.split('.')
     d = _config
+    iter_keys = key.split('.')
     try:
         for k in iter_keys:
             d = d[k]

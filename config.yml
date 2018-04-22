@@ -4,4 +4,6 @@ db:
     port: 53889
     user: heroku_5bf3tpz4
     pass: i6ed5j67nbfp4389a1j1tl2oj7
-    database: heroku_5bf3tpz4
+    name: heroku_5bf3tpz4
+log:
+  level: debug

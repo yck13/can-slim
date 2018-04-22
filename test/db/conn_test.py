@@ -1,4 +1,5 @@
-from db.conn import get_database
+from db.conn import get_client
 
 def test_database_connection():
-    assert get_database() is not None
+    client = get_client()
+    assert client.server_info()
