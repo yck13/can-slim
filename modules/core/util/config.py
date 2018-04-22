@@ -4,7 +4,7 @@ from typing import Dict
 from ruamel.yaml import YAML
 
 # the project root directory
-PROJECT_ROOT = dirname(dirname(abspath(__file__)))
+PROJECT_ROOT = abspath(join(__file__, '..', '..', '..', '..'))
 
 def get(key: str) -> object:
     """

@@ -1,6 +1,7 @@
 import logging
 from logging import DEBUG, INFO, WARN, WARNING, ERROR, FATAL, Logger
-from util import config
+from modules.core.util import config
+
 
 def getLogger(name: str) -> Logger:
     logger = logging.getLogger(name)
