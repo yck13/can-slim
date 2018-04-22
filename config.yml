@@ -1,3 +1,7 @@
-database:
+db:
   mongo:
-    uri: mongodb://heroku_5bf3tpz4:i6ed5j67nbfp4389a1j1tl2oj7@ds253889.mlab.com:53889/heroku_5bf3tpz4
+    host: ds253889.mlab.com
+    port: 53889
+    user: heroku_5bf3tpz4
+    pass: i6ed5j67nbfp4389a1j1tl2oj7
+    database: heroku_5bf3tpz4

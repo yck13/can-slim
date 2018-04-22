@@ -8,4 +8,5 @@ requests==2.18.4
 # database libraries
 pymongo==3.6.1
 
-pyyaml==3.12
+# parser libraries
+ruamel.yaml==0.15.37
