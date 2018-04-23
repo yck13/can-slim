@@ -3,13 +3,13 @@ from logging import DEBUG, INFO, WARN, WARNING, ERROR, FATAL, Logger
 from modules.core.util import config
 
 
-def getLogger(name: str) -> Logger:
+def get_logger(name: str) -> Logger:
     logger = logging.getLogger(name)
     logger.setLevel(DEBUG)
     logger.addHandler(_ch)
     return logger
 
-def _getLogLevelFromConfig():
+def _get_log_level_from_config():
     lookup = {
         'debug': DEBUG,
         'info': INFO,
@@ -28,7 +28,7 @@ def _getLogLevelFromConfig():
 
 # create console handler
 _formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-_level = _getLogLevelFromConfig()
+_level = _get_log_level_from_config()
 _ch = logging.StreamHandler()
 _ch.setFormatter(_formatter)
 _ch.setLevel(_level)

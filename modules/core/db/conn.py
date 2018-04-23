@@ -3,7 +3,7 @@ from pymongo.collection import Collection
 
 from modules.core.util import config, log
 
-_logger = log.getLogger(__file__)
+_logger = log.get_logger(__file__)
 
 # get database collections
 def get_stock_prices() -> Collection:
@@ -19,6 +19,6 @@ _client = MongoClient('mongodb://{user}:{pw}@{host}:{port}/{dbName}'
                       .format(user=_user, pw=_pass, host=_host, port=_port, dbName=_dbName))
 _db = _client[_dbName]
 
-_client.server_info()
+_client.server_info() # this line actually connects to database to test connection
 _logger.info('Connected to MongoDB')
 

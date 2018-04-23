@@ -5,5 +5,8 @@ db:
     user: heroku_5bf3tpz4
     pass: i6ed5j67nbfp4389a1j1tl2oj7
     name: heroku_5bf3tpz4
+http:
+  lse_scraper:
+    parallelism: 100
 log:
   level: debug
