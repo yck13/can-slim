@@ -1,6 +1,7 @@
 from enum import Enum
 from typing import NamedTuple
 
+
 # index enum
 class Index(Enum):
     FTSE100 = 'UKX'
@@ -9,8 +10,9 @@ class Index(Enum):
     def __init__(self, ticker: str):
         self.ticker = ticker
 
-# constituent named tuple
-Constituent = NamedTuple('Constituent', [
+
+# index constituent named tuple
+IndexConstituent = NamedTuple('IndexConstituent', [
     ('ticker', str),
     ('name', str),
     ('currency', str)

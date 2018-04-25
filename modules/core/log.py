@@ -1,6 +1,7 @@
 import logging
 from logging import DEBUG, INFO, WARN, WARNING, ERROR, FATAL, Logger
-from modules.core.util import config
+
+from modules.core import config
 
 
 def get_logger(name: str) -> Logger:
@@ -8,6 +9,7 @@ def get_logger(name: str) -> Logger:
     logger.setLevel(DEBUG)
     logger.addHandler(_ch)
     return logger
+
 
 def _get_log_level_from_config():
     lookup = {
@@ -25,6 +27,7 @@ def _get_log_level_from_config():
         return fallback
     else:
         return lookup.get(str(level).lower(), fallback)
+
 
 # create console handler
 _formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')

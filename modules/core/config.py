@@ -1,10 +1,10 @@
-from os.path import dirname, abspath, join
+from os.path import join
 from typing import Dict
 
 from ruamel.yaml import YAML
 
-# the project root directory
-PROJECT_ROOT = abspath(join(__file__, '..', '..', '..', '..'))
+from constants import PROJECT_ROOT
+
 
 def get(key: str) -> object:
     """
@@ -21,6 +21,7 @@ def get(key: str) -> object:
         raise KeyError("'{}' is not present in config".format(key))
     else:
         return d
+
 
 with open(join(PROJECT_ROOT, 'config.yml')) as f:
     _yaml = YAML(typ='safe')

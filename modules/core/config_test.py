@@ -1,6 +1,6 @@
 import pytest
 
-from modules.core.util import config
+from modules.core import config
 
 
 def test_get():

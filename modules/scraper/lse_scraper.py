@@ -3,9 +3,8 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
-from modules.core.model.index import Constituent
-from modules.core.model.index import Index
-from modules.core.util import config
+from modules.core.model.index import Index, IndexConstituent
+from modules.core import config
 from concurrent.futures import ThreadPoolExecutor
 
 _CONSTITUENTS_URL = 'http://www.londonstockexchange.com/exchange/prices-and-markets/stocks/indices/summary/' \
@@ -16,7 +15,7 @@ class LSEScraper:
     def __init__(self):
         self.executor = ThreadPoolExecutor(max_workers=config.get('http.lse_scraper.parallelism'))
 
-    def get_constituents(self, index: Index) -> [Constituent]:
+    def get_constituents(self, index: Index) -> [IndexConstituent]:
         """
         scrapes and returns the list of underlying commpany tickers of index (e.g. UKX)
         :param index:
@@ -36,14 +35,14 @@ class LSEScraper:
             m = p.search(text)
             return int(m.group(1))
 
-        def _get_constituents_in_page(page: int) -> [Constituent]:
+        def _get_constituents_in_page(page: int) -> [IndexConstituent]:
             html = _open_page(page)
             soup = BeautifulSoup(html, 'lxml')
             rows = soup.select('#pi-colonna1-display > table > tbody > tr')
             constituents = []
             for row in rows:
                 [ticker, name, currency] = [cell.text.strip() for cell in row.find_all('td')[:3]]
-                c = Constituent(ticker=ticker, name=name, currency=currency)
+                c = IndexConstituent(ticker=ticker, name=name, currency=currency)
                 constituents.append(c)
             return constituents
 

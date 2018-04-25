@@ -6,7 +6,7 @@ pandas==0.22.0
 requests==2.18.4
 
 # database libraries
-pymongo==3.6.1
+mongoengine==0.15.0
 
 # parser libraries
 beautifulsoup4==4.6.0
