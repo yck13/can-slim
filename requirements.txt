@@ -6,7 +6,7 @@ pandas==0.22.0
 requests==2.18.4
 
 # database libraries
-mongoengine==0.15.0
+pymongo==3.6.1
 
 # parser libraries
 beautifulsoup4==4.6.0
@@ -15,3 +15,4 @@ ruamel.yaml==0.15.37
 
 # test libraries
 pytest==3.5.0
+mongomock==3.9.0
