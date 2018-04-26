@@ -48,6 +48,6 @@ class LSEScraper:
 
         total_pages = _get_total_pages()
 
-        futures = [self.executor.submit(_get_constituents_in_page, page) for page in range(1, total_pages + 1)]
-        constituents = [constituent for future in futures for constituent in future.result()]
+        futures = self.executor.map(_get_constituents_in_page, range(1, total_pages + 1))
+        constituents = [c for cs in futures for c in cs]
         return constituents

@@ -9,5 +9,5 @@ class HistoricPrice(NamedTuple):
 
 class Stock(NamedTuple):
     ticker: str
-    name: str
-    historicPrices: List[HistoricPrice] = []
+    name: str = None
+    historic_prices: List[HistoricPrice] = []
