@@ -1,9 +1,11 @@
+
 import mongomock
 import pytest
+from datetime import date
 
 import modules.core.db.access.stock as stock_dal
 from modules.core.db.access.stock import list_stock_tickers, upsert_stocks, delete_stocks
-from modules.core.model.stock import Stock
+from modules.core.model.stock import Stock, HistoricDataPoint
 
 
 # replace actual reference with mock collection
@@ -24,7 +26,9 @@ def test_upsert_stocks(mock_collection):
     aapl_wrong = Stock(ticker='AAPL', name='Aaa')
     mock_collection.insert_many([aapl_wrong._asdict()])
 
-    aapl = Stock(ticker='AAPL', name='Apple')
+    aapl = Stock(ticker='AAPL',
+                 name='Apple',
+                 time_series=[HistoricDataPoint(date=date(2001, 1, 1), price=1, volume=100)])
     goog = Stock(ticker='GOOG', name='Google')
     upsert_stocks([aapl, goog])
 

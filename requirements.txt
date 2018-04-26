@@ -1,3 +1,6 @@
+# data provider libraries
+alpha-vantage==2.0.0
+
 # numeric computation libraries
 numpy==1.14.2
 pandas==0.22.0

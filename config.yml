@@ -5,8 +5,13 @@ db:
     user: heroku_5bf3tpz4
     pass: i6ed5j67nbfp4389a1j1tl2oj7
     name: heroku_5bf3tpz4
-http:
-  lse_scraper:
+
+scraper:
+  alpha_vantage:
+    api_key: UG2H4T4ZN4MY039Y
+    lookback_days: 1825 # approx 5 years
+  lse:
     parallelism: 100
+
 log:
   level: debug

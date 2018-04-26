@@ -3,10 +3,9 @@ from typing import List
 
 from modules.core.db.access.stock import list_stock_tickers, delete_stocks, upsert_stocks
 from modules.core.log import get_logger
-from modules.core.model.index import Index
 from modules.core.model.stock import Stock
 from modules.core.util.list_util import set_difference
-from modules.scraper.lse_scraper import LSEScraper
+from modules.scraper.lse_scraper import LSEScraper, Index
 
 _log = get_logger(__file__)
 _SCRAPE_INDICES = [Index.FTSE100, Index.FTSE250]
@@ -14,12 +13,12 @@ _SCRAPE_INDICES = [Index.FTSE100, Index.FTSE250]
 
 def _scrape_stock_tickers() -> List[str]:
     scraper = LSEScraper()
-    tickers = []
+    all_tickers = []
     with ThreadPoolExecutor() as executor:
         futures = executor.map(scraper.get_constituents, _SCRAPE_INDICES)
-        for index_tickers in futures:
-            tickers.extend(index_tickers)
-    return tickers
+        for tickers in futures:
+            all_tickers.extend(tickers)
+    return all_tickers
 
 
 def run_script():
