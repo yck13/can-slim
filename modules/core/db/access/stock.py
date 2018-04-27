@@ -1,7 +1,6 @@
 from typing import List
 
-from pymongo import ReplaceOne
-from pymongo.results import BulkWriteResult, DeleteResult
+from pymongo import ReplaceOne, IndexModel, ASCENDING
 
 from modules.core.db.conn import get_collection
 from modules.core.model.stock import Stock
@@ -26,3 +25,8 @@ def delete_stocks(tickers: List[str]) -> None:
     if not tickers:
         return
     return _stock.delete_many(filter={'ticker': {'$in': tickers}})
+
+
+def create_indexes() -> None:
+    ticker_ts_index = IndexModel([('ticker', ASCENDING), ('time_series.date', ASCENDING)], unique=True)
+    _stock.create_indexes([ticker_ts_index])

@@ -1,7 +1,8 @@
 import re
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
-from typing import List
+from typing import List, Tuple
+from modules.core.model.stock import Stock
 
 import requests
 from bs4 import BeautifulSoup
@@ -25,9 +26,9 @@ class LSEScraper:
     def __init__(self):
         self.executor = ThreadPoolExecutor(max_workers=config.get('scraper.lse.parallelism'))
 
-    def get_constituents(self, index: Index) -> List[str]:
+    def get_constituents(self, index: Index) -> List[Tuple[str, str]]:
         """
-        scrapes and returns the list of underlying commpany tickers of index (e.g. UKX)
+        scrapes and returns the list of (ticker, name) pairs
         :param index:
         :return:
         """
@@ -51,10 +52,10 @@ class LSEScraper:
             rows = soup.select('#pi-colonna1-display > table > tbody > tr')
             constituents = []
             for row in rows:
-                ticker = '{symbol}.{suffix}'.format(
-                    symbol=row.find('td').text.strip(),
-                    suffix=index.constituents_suffix)
-                constituents.append(ticker)
+                [local_ticker, name] = [cell.text.strip() for cell in row.find_all('td')[:2]]
+                ticker = '{local_ticker}.{suffix}'.format(local_ticker=local_ticker, suffix=index.constituents_suffix)
+                constituent = (ticker, name)
+                constituents.append(constituent)
             return constituents
 
         total_pages = _get_total_pages()
