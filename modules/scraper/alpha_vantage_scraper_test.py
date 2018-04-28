@@ -11,8 +11,8 @@ def scraper():
 
 
 def test_get_time_series(scraper):
-    time_series = scraper.get_time_series(ticker='MSFT')
-    assert len(time_series)
+    time_series = scraper.get_time_series(ticker='TSCO.L')
+    assert len(time_series) == 1265
 
     historic_data_point = time_series[0]
     assert type(historic_data_point.time) == datetime
