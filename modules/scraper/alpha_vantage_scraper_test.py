@@ -10,6 +10,7 @@ def scraper():
     return AlphaVantageScraper()
 
 
+@pytest.mark.skip(reason="Alpha Vantage API is unreliable, sometimes give missing data")
 def test_get_time_series(scraper):
     time_series = scraper.get_time_series(yahoo_ticker='TSCO.L')
     assert len(time_series) > 0
