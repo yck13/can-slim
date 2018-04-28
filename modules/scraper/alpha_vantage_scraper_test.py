@@ -12,9 +12,14 @@ def scraper():
 
 def test_get_time_series(scraper):
     time_series = scraper.get_time_series(yahoo_ticker='TSCO.L')
-    assert len(time_series) == 1265
+    assert len(time_series) > 0
 
-    historic_data_point = time_series[0]
-    assert type(historic_data_point.time) == datetime
-    assert historic_data_point.price > 0
-    assert historic_data_point.volume > 0
+    for point in time_series:
+        assert type(point.time) == datetime
+        assert point.open > 0
+        assert point.high > 0
+        assert point.low > 0
+        assert point.close > 0
+        assert point.high >= point.open >= point.low
+        assert point.high >= point.close >= point.low
+        assert point.volume > 0

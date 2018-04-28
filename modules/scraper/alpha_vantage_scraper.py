@@ -1,13 +1,16 @@
 from datetime import date
 from datetime import timedelta
-from typing import Iterable
-from ratelimit import limits, sleep_and_retry
+from warnings import warn, simplefilter
 
 from alpha_vantage.timeseries import TimeSeries as AlphaVantageTimeSeries
 from pandas import to_datetime
+from ratelimit import limits, sleep_and_retry
 
 from modules.core import config
 from modules.core.model.stock import TimeSeries, HistoricDataPoint
+
+simplefilter('always', DeprecationWarning)
+warn("This module is deprecated as Alpha Vantage is found to give inconsistent results", DeprecationWarning)
 
 
 class AlphaVantageScraper:
@@ -18,8 +21,9 @@ class AlphaVantageScraper:
     default_start_date = date.today() - timedelta(days=lookback_days)
 
     @sleep_and_retry
-    @limits(calls = rate_limit['calls'], period = rate_limit['period'])
-    def get_time_series(self, yahoo_ticker: str, start_date: date = default_start_date, end_date: date = date.today()) -> TimeSeries:
+    @limits(calls=rate_limit['calls'], period=rate_limit['period'])
+    def get_time_series(self, yahoo_ticker: str, start_date: date = default_start_date,
+                        end_date: date = date.today()) -> TimeSeries:
         """
         Returns time series for given ticker in Yahoo finance format (e.g. HSBA.L)
         :param yahoo_ticker:
@@ -31,5 +35,11 @@ class AlphaVantageScraper:
         data, meta_data = ts.get_daily(symbol=yahoo_ticker, outputsize='full')
         data.index = to_datetime(data.index)
         data_truncated = data.truncate(before=start_date, after=end_date)
-        return [HistoricDataPoint(time=dt.to_pydatetime(), price=row['4. close'], volume=row['5. volume']) for dt, row in
-                data_truncated.iterrows()]
+        return [HistoricDataPoint(
+            time=dt.to_pydatetime(),
+            open=row['1. open'],
+            high=row['2. high'],
+            low=row['3. low'],
+            close=row['4. close'],
+            volume=row['5. volume']
+        ) for dt, row in data_truncated.iterrows()]
