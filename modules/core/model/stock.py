@@ -4,7 +4,10 @@ from typing import NamedTuple, List, Optional
 
 class HistoricDataPoint(NamedTuple):
     time: datetime
-    price: float
+    open: float
+    high: float
+    low: float
+    close: float
     volume: float
 
 # type alias time series = list of historic data points

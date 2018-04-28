@@ -19,15 +19,16 @@ class AlphaVantageScraper:
 
     @sleep_and_retry
     @limits(calls = rate_limit['calls'], period = rate_limit['period'])
-    def get_time_series(self, ticker: str, start_date: date = default_start_date, end_date: date = date.today()) -> TimeSeries:
+    def get_time_series(self, yahoo_ticker: str, start_date: date = default_start_date, end_date: date = date.today()) -> TimeSeries:
         """
-        scrapes and returns the list of underlying commpany tickers of index (e.g. UKX)
-        :param index:
+        Returns time series for given ticker in Yahoo finance format (e.g. HSBA.L)
+        :param yahoo_ticker:
+        :param start_date:
+        :param end_date:
         :return:
         """
-
         ts = AlphaVantageTimeSeries(key=self.api_key, output_format='pandas')
-        data, meta_data = ts.get_daily(symbol=ticker, outputsize='full')
+        data, meta_data = ts.get_daily(symbol=yahoo_ticker, outputsize='full')
         data.index = to_datetime(data.index)
         data_truncated = data.truncate(before=start_date, after=end_date)
         return [HistoricDataPoint(time=dt.to_pydatetime(), price=row['4. close'], volume=row['5. volume']) for dt, row in

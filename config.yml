@@ -14,6 +14,11 @@ scraper:
     rate_limit:
       calls: 5 # 5 calls
       period: 5 # per 5 second
+  market_watch:
+    ckey: cecc4267a0
+    entitlement_token: cecc4267a0194af89ca343805a3e57af
+    step: P1D
+    timeframe: P5Y
   lse:
     concurrency: 100
 
