@@ -1,4 +1,4 @@
-from modules.core.util.list_util import set_difference
+from modules.core.util.collections.list_util import set_difference
 
 def test_set_difference():
     left = [1,2,3]

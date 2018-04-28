@@ -10,8 +10,12 @@ scraper:
   alpha_vantage:
     api_key: UG2H4T4ZN4MY039Y
     lookback_days: 1825 # approx 5 years
+    concurrency: 10
+    rate_limit:
+      calls: 5 # 5 calls
+      period: 5 # per 5 second
   lse:
-    parallelism: 100
+    concurrency: 100
 
 log:
   level: debug

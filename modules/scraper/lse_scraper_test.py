@@ -11,7 +11,7 @@ def scraper():
 def test_get_ftse_100_constituents(scraper):
     constituents = scraper.get_constituents(Index.FTSE100)
     tickers = [ticker for ticker, _ in constituents]
-    assert 'BARC.L' in tickers
+    assert 'BT-A.L' in tickers
     assert 'GSK.L' in tickers
 
 

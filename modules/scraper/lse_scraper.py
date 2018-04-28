@@ -2,7 +2,6 @@ import re
 from concurrent.futures import ThreadPoolExecutor
 from enum import Enum
 from typing import List, Tuple
-from modules.core.model.stock import Stock
 
 import requests
 from bs4 import BeautifulSoup
@@ -17,14 +16,14 @@ class Index(Enum):
     FTSE100 = ('UKX', 'L')
     FTSE250 = ('MCX', 'L')
 
-    def __init__(self, index_ticker: str, constituents_suffix: str):
+    def __init__(self, index_ticker: str, suffix: str):
         self.index_ticker = index_ticker
-        self.constituents_suffix = constituents_suffix
+        self.suffix = suffix
 
 
 class LSEScraper:
-    def __init__(self):
-        self.executor = ThreadPoolExecutor(max_workers=config.get('scraper.lse.parallelism'))
+
+    concurrency = config.get('scraper.lse.concurrency')
 
     def get_constituents(self, index: Index) -> List[Tuple[str, str]]:
         """
@@ -52,14 +51,21 @@ class LSEScraper:
             rows = soup.select('#pi-colonna1-display > table > tbody > tr')
             constituents = []
             for row in rows:
-                [local_ticker, name] = [cell.text.strip() for cell in row.find_all('td')[:2]]
-                ticker = '{local_ticker}.{suffix}'.format(local_ticker=local_ticker, suffix=index.constituents_suffix)
+                [ticker, name] = [cell.text.strip() for cell in row.find_all('td')[:2]]
+                ticker = _convert_to_yahoo_finance_ticker(ticker)
                 constituent = (ticker, name)
                 constituents.append(constituent)
             return constituents
 
+        def _convert_to_yahoo_finance_ticker(ticker: str) -> str:
+            if ticker.endswith('.'):
+                ticker = ticker[:-1]
+            ticker = ticker.replace('.', '-')
+            return ticker + '.' + index.suffix
+
         total_pages = _get_total_pages()
 
-        futures = self.executor.map(_get_constituents_in_page, range(1, total_pages + 1))
-        constituents = [c for cs in futures for c in cs]
+        with ThreadPoolExecutor(max_workers=LSEScraper.concurrency) as executor:
+            futures = executor.map(_get_constituents_in_page, range(1, total_pages + 1))
+            constituents = [c for cs in futures for c in cs]
         return constituents

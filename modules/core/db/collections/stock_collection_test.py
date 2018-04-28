@@ -1,26 +1,36 @@
+from datetime import datetime
 
 import mongomock
 import pytest
-from datetime import date
 
-import modules.core.db.access.stock as stock_dal
-from modules.core.db.access.stock import list_stock_tickers, upsert_stocks, delete_stocks
+from modules.core.db.collections import stock_collection
+from modules.core.db.collections.stock_collection import list_stocks, upsert_stocks, delete_stocks, create_indexes
 from modules.core.model.stock import Stock, HistoricDataPoint
 
 
-# replace actual reference with mock collection
+# replace actual reference with mock collections
 @pytest.fixture(autouse=True)
 def mock_collection():
-    stock_dal._stock = mongomock.MongoClient().db.stock
-    return stock_dal._stock
+    stock_collection._collection = mongomock.MongoClient().db.stock
+    return stock_collection._collection
 
 
-def test_list_stock_tickers(mock_collection):
-    aapl = Stock(ticker='AAPL', name='Apple')
-    mock_collection.insert_one(aapl._asdict())
+def test_list_stocks(mock_collection):
+    aapl = Stock(ticker='AAPL', name='Apple', time_series=[
+        HistoricDataPoint(time=datetime(2001, 1, 1), price=1, volume=100)
+    ])
+    aapl_dict = {
+        'ticker': 'AAPL',
+        'name': 'Apple',
+        'time_series': [
+            {'time': datetime(2001, 1, 1), 'price': 1, 'volume': 100}
+        ]
+    }
+    mock_collection.insert_one(aapl_dict)
 
-    tickers = list_stock_tickers()
-    assert tickers == ['AAPL']
+    stocks = list_stocks(fields=[])
+    assert stocks == [aapl]
+
 
 def test_upsert_stocks(mock_collection):
     aapl_wrong = Stock(ticker='AAPL', name='Aaa')
@@ -28,7 +38,9 @@ def test_upsert_stocks(mock_collection):
 
     aapl = Stock(ticker='AAPL',
                  name='Apple',
-                 time_series=[HistoricDataPoint(date=date(2001, 1, 1), price=1, volume=100)])
+                 time_series=[
+                     HistoricDataPoint(time=datetime(2001, 1, 1), price=1, volume=100)
+                 ])
     goog = Stock(ticker='GOOG', name='Google')
     upsert_stocks([aapl, goog])
 

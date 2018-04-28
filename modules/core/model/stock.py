@@ -1,9 +1,9 @@
-from datetime import date
+from datetime import datetime
 from typing import NamedTuple, List, Optional
 
 
 class HistoricDataPoint(NamedTuple):
-    date: date
+    time: datetime
     price: float
     volume: float
 

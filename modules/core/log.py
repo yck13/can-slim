@@ -30,7 +30,7 @@ def _get_log_level_from_config():
 
 
 # create console handler
-_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+_formatter = logging.Formatter('%(asctime)s [%(threadName)s] - %(name)s - %(levelname)s - %(message)s')
 _level = _get_log_level_from_config()
 _ch = logging.StreamHandler()
 _ch.setFormatter(_formatter)
