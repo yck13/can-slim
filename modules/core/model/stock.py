@@ -16,4 +16,8 @@ TimeSeries = List[HistoricDataPoint]
 class Stock(NamedTuple):
     ticker: str
     name: str = None
+    cusip: str = None
+    sedol: str = None
+    isin: str = None
+    country_code: str = None
     time_series: TimeSeries = []

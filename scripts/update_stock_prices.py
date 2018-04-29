@@ -38,7 +38,15 @@ def scrape_stock(ticker: str, country_code: str) -> Stock:
         iso_code=basic_info.iso_code
     )
     log.debug('Scraped stock: {country_code}:{ticker}'.format(country_code=country_code, ticker=ticker))
-    return Stock(ticker=ticker, name=basic_info.name, time_series=time_series)
+    return Stock(
+        ticker=ticker,
+        name=basic_info.name,
+        cusip=basic_info.cusip,
+        sedol=basic_info.sedol,
+        isin=basic_info.isin,
+        country_code=country_code,
+        time_series=time_series
+    )
 
 
 def insert_into_database(stock: Stock) -> None:
