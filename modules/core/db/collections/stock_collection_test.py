@@ -4,11 +4,10 @@ import mongomock
 import pytest
 
 from modules.core.db.collections import stock_collection
-from modules.core.db.collections.stock_collection import list_stocks, upsert_stocks, delete_stocks, create_indexes
+from modules.core.db.collections.stock_collection import list_stocks, upsert_stocks, delete_stocks
 from modules.core.model.stock import Stock, HistoricDataPoint
 
 
-# replace actual reference with mock collections
 @pytest.fixture(autouse=True)
 def mock_collection():
     stock_collection._collection = mongomock.MongoClient().db.stock

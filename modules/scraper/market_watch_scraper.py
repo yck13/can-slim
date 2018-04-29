@@ -1,12 +1,21 @@
 import json
-from datetime import datetime
-from typing import List
+from typing import List, NamedTuple
 
 import requests
+from pandas import to_datetime
 
 from modules.core import config
 from modules.core.model.stock import TimeSeries, HistoricDataPoint
-from pandas import to_datetime
+
+
+class BasicStockInfo(NamedTuple):
+    ticker: str
+    name: str
+    cusip: str
+    sedol: str
+    isin: str
+    country_code: str
+    iso_code: str
 
 
 class MarketWatchScraper:
@@ -15,16 +24,58 @@ class MarketWatchScraper:
     default_step = config.get('scraper.market_watch.step')
     default_timeframe = config.get('scraper.market_watch.timeframe')
 
-    def get_time_series(self, ticker: str, step: str = default_step, timeframe: str = default_timeframe) -> TimeSeries:
+    def get_basic_stock_info(self, ticker: str, country_code: str) -> BasicStockInfo:
+        """
+        Returns the basic stock information for a ticker and country code (e.g. common name, cusip, isin...)
+        :param ticker: e.g. HSBA
+        :param country_code: e.g. uk
+        :return:
+        """
+
+        def open_page():
+            url = 'https://api.wsj.net/api/dylan/quotes/v2/comp/quote'
+            params = {
+                'needed': 'TradingRange|Meta',
+                'id': '{ticker}|{country_code}|||'.format(ticker=ticker, country_code=country_code),
+                'maxInstrumentMatches': 1,
+                'ckey': MarketWatchScraper.ckey,
+                'EntitlementToken': MarketWatchScraper.entitlement_token,
+                'accept': 'application/json'
+            }
+            response = requests.get(url, params)
+            return response.content
+
+        def parse_response(response_json: str) -> BasicStockInfo:
+            data = json.loads(response_json)
+            instrument = data['GetInstrumentResponse']['InstrumentResponses'][0]['Matches'][0]['Instrument']
+            return BasicStockInfo(
+                ticker=instrument['Ticker'],
+                name=instrument['CommonName'],
+                cusip=instrument['Cusip'],
+                sedol=instrument['Sedol'],
+                isin=instrument['Isin'],
+                country_code=instrument['Exchange']['CountryCode'],
+                iso_code=instrument['Exchange']['IsoCode']
+            )
+
+        response = open_page()
+        basic_stock_info = parse_response(response)
+        return basic_stock_info
+
+    def get_time_series(self, ticker: str, country_code: str, iso_code: str, step: str = default_step,
+                        timeframe: str = default_timeframe) -> TimeSeries:
         """
         Returns time series for ticker (e.g. HSBA) given step and timeframe
-        :param ticker:
+        :param ticker: e.g. HSBA
+        :param country_code: for ticker, e.g. uk
+        :param iso_code: for ticker, e.g. xlon
         :param step: e.g. P1D for daily, if not supplied default will be used
         :param timeframe: e.g. P5Y for 5 years, if not supplied default will be used
         :return:
         """
         PRICE_SERIES_ID = 'price'
         VOLUME_SERIES_ID = 'volume'
+        RSI_SERIES_ID = 'rsi'
 
         def open_page() -> str:
             url = 'https://api-secure.wsj.net/api/michelangelo/timeseries/history'
@@ -34,13 +85,15 @@ class MarketWatchScraper:
                 'EntitlementToken': MarketWatchScraper.entitlement_token,
                 'Series': [
                     {
-                        'Key': ticker,
+                        'Key': 'STOCK/{country_code}/{iso_code}/{ticker}'.format(country_code=country_code,
+                                                                                 iso_code=iso_code, ticker=ticker),
                         'Dialect': 'Charting',
                         'Kind': 'Ticker',
                         'SeriesId': PRICE_SERIES_ID,
                         'DataTypes': ['Open', 'High', 'Low', 'Last'],
                         'Indicators': [
-                            {'Parameters': [], 'Kind': 'Volume', 'SeriesId': VOLUME_SERIES_ID}
+                            {'Parameters': [], 'Kind': 'Volume', 'SeriesId': VOLUME_SERIES_ID},
+                            {'Parameters': [], 'Kind': 'RelativeStrengthIndex', 'SeriesId': RSI_SERIES_ID}
                         ]
                     }
                 ]
@@ -64,14 +117,17 @@ class MarketWatchScraper:
             time_axis = data['TimeInfo']['Ticks']
             price_series = extract_series(PRICE_SERIES_ID)
             volume_series = extract_series(VOLUME_SERIES_ID)
+            rsi_series = extract_series(RSI_SERIES_ID)
             time_series = [HistoricDataPoint(
                 time=to_datetime(unix_timestamp, unit='ms').to_pydatetime(),
                 open=open,
                 high=high,
                 low=low,
                 close=last,
-                volume=volume
-            ) for unix_timestamp, [open, high, low, last], [volume] in zip(time_axis, price_series, volume_series)]
+                volume=volume,
+                rsi=rsi
+            ) for unix_timestamp, [open, high, low, last], [volume], [rsi]
+                in zip(time_axis, price_series, volume_series, rsi_series)]
             return time_series
 
         response = open_page()

@@ -1,21 +1,21 @@
 from concurrent.futures import ThreadPoolExecutor
-from typing import List, Generator
+from itertools import repeat
 from timeit import default_timer as timer
+from typing import List
 
 from modules.core.db.collections.stock_collection import list_stocks, upsert_stocks, delete_stocks
 from modules.core.log import get_logger
 from modules.core.model.stock import Stock
 from modules.core.util.collections.list_util import set_difference
-from modules.scraper.alpha_vantage_scraper import AlphaVantageScraper
 from modules.scraper.lse_scraper import LSEScraper, Index
+from modules.scraper.market_watch_scraper import MarketWatchScraper
 
 log = get_logger(__file__)
+SCRAPE_TARGETS = [Index.FTSE100, Index.FTSE250]
+SCRAPE_TARGETS_COUNTRY_CODE = 'UK'
 
 lse_scraper = LSEScraper()
-alpha_vantage_scraper = AlphaVantageScraper()
-
-# custom types
-StocksGenerator = Generator[Stock, None, None]
+market_watch_scraper = MarketWatchScraper()
 
 
 def get_current_tickers() -> List[str]:
@@ -23,17 +23,22 @@ def get_current_tickers() -> List[str]:
     return [s.ticker for s in current_stocks]
 
 
-def scrape_new_tickers_from(*indices: Index) -> List[str]:
+def scrape_new_tickers_from(indices: List[Index]) -> List[str]:
     with ThreadPoolExecutor() as executor:
         futures = executor.map(lse_scraper.get_constituents, indices)
         tickers = [ticker for constituents in futures for ticker, _ in constituents]
     return tickers
 
 
-def scrape_stock(ticker: str) -> Stock:
-    time_series = alpha_vantage_scraper.get_time_series(ticker)
-    log.debug('Scraped stock: {}'.format(ticker, time_series))
-    return Stock(ticker=ticker, time_series=time_series)
+def scrape_stock(ticker: str, country_code: str) -> Stock:
+    basic_info = market_watch_scraper.get_basic_stock_info(ticker, country_code)
+    time_series = market_watch_scraper.get_time_series(
+        ticker=basic_info.ticker,
+        country_code=basic_info.country_code,
+        iso_code=basic_info.iso_code
+    )
+    log.debug('Scraped stock: {country_code}:{ticker}'.format(country_code=country_code, ticker=ticker))
+    return Stock(ticker=ticker, name=basic_info.name, time_series=time_series)
 
 
 def insert_into_database(stock: Stock) -> None:
@@ -41,8 +46,8 @@ def insert_into_database(stock: Stock) -> None:
     log.debug('Inserted into database: {}'.format(stock.ticker))
 
 
-def scrape_stock_and_insert_into_database(ticker: str) -> None:
-    stock = scrape_stock(ticker)
+def scrape_stock_and_insert_into_database(ticker: str, country_code: str) -> None:
+    stock = scrape_stock(ticker, country_code)
     insert_into_database(stock)
 
 
@@ -52,7 +57,7 @@ if __name__ == '__main__':
     current_tickers = get_current_tickers()
 
     log.info('Scraping new tickers from London Stock Exchange...')
-    new_tickers = scrape_new_tickers_from(Index.FTSE100, Index.FTSE250)
+    new_tickers = scrape_new_tickers_from(SCRAPE_TARGETS)
     log.info('Got new tickers: {}'.format(new_tickers))
 
     # delete obsolete tickers from database
@@ -62,7 +67,7 @@ if __name__ == '__main__':
         log.info('Deleted obsolete tickers: {}'.format(tickers_to_delete))
 
     with ThreadPoolExecutor() as executor:
-        executor.map(scrape_stock_and_insert_into_database, new_tickers)
+        executor.map(scrape_stock_and_insert_into_database, new_tickers, repeat(SCRAPE_TARGETS_COUNTRY_CODE))
 
     end_time = timer()
-    log.info('Completed update stock prices in {:.2f} seconds', end_time - start_time)
+    log.info('Completed update stock prices in {:.2f} seconds'.format(end_time - start_time))

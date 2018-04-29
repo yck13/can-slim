@@ -5,4 +5,4 @@ log = get_logger(__file__)
 
 if __name__ == '__main__':
     create_indexes()
-    log.info('Create DB indexes complete')
+    log.info('Created database indices')

@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import NamedTuple, List, Optional
+from typing import NamedTuple, List
 
 
 class HistoricDataPoint(NamedTuple):
@@ -9,6 +9,7 @@ class HistoricDataPoint(NamedTuple):
     low: float
     close: float
     volume: float
+    rsi: float
 
 # type alias time series = list of historic data points
 TimeSeries = List[HistoricDataPoint]

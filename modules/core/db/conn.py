@@ -7,8 +7,10 @@ from modules.core import config, log
 _db: Database
 _log = log.get_logger(__file__)
 
+
 def get_collection(name: str) -> Collection:
     return _db.get_collection(name)
+
 
 # initialise connection below
 def init_connection() -> None:
@@ -19,10 +21,11 @@ def init_connection() -> None:
     port = config.get('db.mongo.port')
     db_name = config.get('db.mongo.name')
     client = MongoClient('mongodb://{user}:{password}@{host}:{port}/{db_name}'
-                          .format(user=user, password=password, host=host, port=port, db_name=db_name))
+                         .format(user=user, password=password, host=host, port=port, db_name=db_name))
     _db = client[db_name]
 
-    _db.list_collection_names() # this line actually connects to database to test connection
+    _db.list_collection_names()  # this line actually connects to database to test connection
     _log.info('Connected to MongoDB')
+
 
 init_connection()

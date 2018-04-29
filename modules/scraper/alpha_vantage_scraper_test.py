@@ -21,6 +21,6 @@ def test_get_time_series(scraper):
         assert point.high > 0
         assert point.low > 0
         assert point.close > 0
-        assert point.high >= point.open >= point.low
-        assert point.high >= point.close >= point.low
+        assert point.low <= point.open <= point.high
+        assert point.low <= point.close <= point.high
         assert point.volume > 0

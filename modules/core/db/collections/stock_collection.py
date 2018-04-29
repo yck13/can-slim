@@ -1,7 +1,7 @@
 from typing import List, Dict, Iterable
 
 from pymongo import ReplaceOne, IndexModel, ASCENDING
-from datetime import datetime, time
+
 from modules.core.db.conn import get_collection
 from modules.core.model.stock import Stock, HistoricDataPoint
 
@@ -16,6 +16,13 @@ def _document_to_stock(document: Dict) -> Stock:
     stock = Stock(**document)
     return stock
 
+
+def _stock_to_document(stock: Stock) -> Dict:
+    document = stock._asdict()
+    document['time_series'] = [pt._asdict() for pt in stock.time_series]
+    return document
+
+
 def list_stocks(fields: List[str] = []) -> List[Stock]:
     args = {}
     if fields:
@@ -27,7 +34,7 @@ def list_stocks(fields: List[str] = []) -> List[Stock]:
 def upsert_stocks(stocks: Iterable[Stock]) -> None:
     if not stocks:
         return
-    requests = [ReplaceOne(filter={'ticker': s.ticker}, replacement=s._asdict(), upsert=True) for s in stocks]
+    requests = [ReplaceOne(filter={'ticker': s.ticker}, replacement=_stock_to_document(s), upsert=True) for s in stocks]
     return _collection.bulk_write(requests)
 
 

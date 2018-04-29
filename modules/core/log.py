@@ -28,7 +28,6 @@ def _get_log_level_from_config():
     else:
         return lookup.get(str(level).lower(), fallback)
 
-
 # create console handler
 _formatter = logging.Formatter('%(asctime)s [%(threadName)s] - %(name)s - %(levelname)s - %(message)s')
 _level = _get_log_level_from_config()
