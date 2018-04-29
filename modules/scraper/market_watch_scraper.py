@@ -75,7 +75,6 @@ class MarketWatchScraper:
         """
         PRICE_SERIES_ID = 'price'
         VOLUME_SERIES_ID = 'volume'
-        RSI_SERIES_ID = 'rsi'
 
         def open_page() -> str:
             url = 'https://api-secure.wsj.net/api/michelangelo/timeseries/history'
@@ -92,8 +91,7 @@ class MarketWatchScraper:
                         'SeriesId': PRICE_SERIES_ID,
                         'DataTypes': ['Open', 'High', 'Low', 'Last'],
                         'Indicators': [
-                            {'Parameters': [], 'Kind': 'Volume', 'SeriesId': VOLUME_SERIES_ID},
-                            {'Parameters': [], 'Kind': 'RelativeStrengthIndex', 'SeriesId': RSI_SERIES_ID}
+                            {'Parameters': [], 'Kind': 'Volume', 'SeriesId': VOLUME_SERIES_ID}
                         ]
                     }
                 ]
@@ -117,17 +115,15 @@ class MarketWatchScraper:
             time_axis = data['TimeInfo']['Ticks']
             price_series = extract_series(PRICE_SERIES_ID)
             volume_series = extract_series(VOLUME_SERIES_ID)
-            rsi_series = extract_series(RSI_SERIES_ID)
             time_series = [HistoricDataPoint(
                 time=to_datetime(unix_timestamp, unit='ms').to_pydatetime(),
                 open=open,
                 high=high,
                 low=low,
                 close=last,
-                volume=volume,
-                rsi=rsi
-            ) for unix_timestamp, [open, high, low, last], [volume], [rsi]
-                in zip(time_axis, price_series, volume_series, rsi_series)]
+                volume=volume
+            ) for unix_timestamp, [open, high, low, last], [volume]
+                in zip(time_axis, price_series, volume_series)]
             return time_series
 
         response = open_page()
