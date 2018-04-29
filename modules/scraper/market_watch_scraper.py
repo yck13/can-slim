@@ -5,7 +5,7 @@ import requests
 from pandas import to_datetime
 
 from modules.core import config
-from modules.core.model.stock import TimeSeries, HistoricDataPoint
+from modules.core.model.stock import TimeSeries, HistoricDataPoint, QuarterlyEarning
 
 
 class BasicStockInfo(NamedTuple):
@@ -116,7 +116,7 @@ class MarketWatchScraper:
             price_series = extract_series(PRICE_SERIES_ID)
             volume_series = extract_series(VOLUME_SERIES_ID)
             time_series = [HistoricDataPoint(
-                time=to_datetime(unix_timestamp, unit='ms').to_pydatetime(),
+                time=MarketWatchScraper._unix_to_datetime(unix_timestamp),
                 open=open,
                 high=high,
                 low=low,
@@ -129,3 +129,64 @@ class MarketWatchScraper:
         response = open_page()
         time_series = parse_response(response)
         return time_series
+
+    def get_quarterly_earnings(self, ticker: str, country_code: str, iso_code: str, timeframe: str = default_timeframe) -> List[QuarterlyEarning]:
+        """
+        Returns quarterly earnings series for ticker (e.g. HSBA) given step and timeframe
+        :param ticker: e.g. HSBA
+        :param country_code: for ticker, e.g. uk
+        :param iso_code: for ticker, e.g. xlon
+        :param timeframe: e.g. P5Y for 5 years, if not supplied default will be used
+        :return:
+        """
+        EARNINGS_SERIES_ID = 'earnings'
+
+        def open_page() -> str:
+            url = 'https://api-secure.wsj.net/api/michelangelo/timeseries/history'
+            options = {
+                'Step': 'P10Y', # since we are only interested in events, we try to get rid of irrelevant series data by using a large step
+                'TimeFrame': timeframe,
+                'EntitlementToken': MarketWatchScraper.entitlement_token,
+                'Series': [
+                    {
+                        'Key': 'STOCK/{country_code}/{iso_code}/{ticker}'.format(country_code=country_code,
+                                                                                 iso_code=iso_code, ticker=ticker),
+                        'Dialect': 'Charting',
+                        'Kind': 'Ticker',
+                        'SeriesId': 's1',
+                        'Indicators': [
+                            {
+                                'Parameters': [{'Name': 'YearOverYear'}],
+                                'Kind': 'EarningsEvents',
+                                'SeriesId': EARNINGS_SERIES_ID
+                            }
+                        ]
+                    }
+                ]
+            }
+            params = {
+                'json': json.dumps(options),
+                'ckey': MarketWatchScraper.ckey
+            }
+            headers = {
+                'Dylan2010.EntitlementToken': MarketWatchScraper.entitlement_token
+            }
+            response = requests.get(url, params, headers=headers)
+            return response.content
+
+        def parse_response(response_json: str) -> List[QuarterlyEarning]:
+            data = json.loads(response_json)
+            events = data['Events'][0]['DataPoints']
+            quarterly_earnings = [QuarterlyEarning(
+                time=MarketWatchScraper._unix_to_datetime(event['EventDate']),
+                value=event['Value']
+            ) for event in events]
+            return quarterly_earnings
+
+        response = open_page()
+        time_series = parse_response(response)
+        return time_series
+
+    @staticmethod
+    def _unix_to_datetime(millis: int):
+        return to_datetime(millis, unit='ms').to_pydatetime()

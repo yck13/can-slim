@@ -37,6 +37,11 @@ def scrape_stock(ticker: str, country_code: str) -> Stock:
         country_code=basic_info.country_code,
         iso_code=basic_info.iso_code
     )
+    quarterly_earnings = market_watch_scraper.get_quarterly_earnings(
+        ticker=basic_info.ticker,
+        country_code=basic_info.country_code,
+        iso_code=basic_info.iso_code
+    )
     log.debug('Scraped stock: {country_code}:{ticker}'.format(country_code=country_code, ticker=ticker))
     return Stock(
         ticker=ticker,
@@ -45,7 +50,8 @@ def scrape_stock(ticker: str, country_code: str) -> Stock:
         sedol=basic_info.sedol,
         isin=basic_info.isin,
         country_code=country_code,
-        time_series=time_series
+        time_series=time_series,
+        quarterly_earnings=quarterly_earnings
     )
 
 
@@ -78,4 +84,4 @@ if __name__ == '__main__':
         executor.map(scrape_stock_and_insert_into_database, new_tickers, repeat(SCRAPE_TARGETS_COUNTRY_CODE))
 
     end_time = timer()
-    log.info('Completed update stock prices in {:.2f} seconds'.format(end_time - start_time))
+    log.info('Completed scraping {} stocks in {:.2f} seconds'.format(len(new_tickers), end_time - start_time))

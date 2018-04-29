@@ -3,24 +3,10 @@ from typing import List, Dict, Iterable
 from pymongo import ReplaceOne, IndexModel, ASCENDING
 
 from modules.core.db.conn import get_collection
-from modules.core.model.stock import Stock, HistoricDataPoint
+from modules.core.model.stock import Stock, HistoricDataPoint, QuarterlyEarning
 
 # database stock collections
 _collection = get_collection('stock')
-
-
-def _document_to_stock(document: Dict) -> Stock:
-    document.pop('_id', None)
-    if 'time_series' in document:
-        document['time_series'] = [HistoricDataPoint(**pt) for pt in document['time_series']]
-    stock = Stock(**document)
-    return stock
-
-
-def _stock_to_document(stock: Stock) -> Dict:
-    document = stock._asdict()
-    document['time_series'] = [pt._asdict() for pt in stock.time_series]
-    return document
 
 
 def list_stocks(fields: List[str] = []) -> List[Stock]:
@@ -51,3 +37,20 @@ def create_indexes() -> None:
     isin_index = IndexModel([('isin', ASCENDING)], unique=True)
     sedol_index = IndexModel([('sedol', ASCENDING)], unique=True)
     _collection.create_indexes([ticker_ts_index, name_index, cusip_index, isin_index, sedol_index])
+
+
+def _document_to_stock(document: Dict) -> Stock:
+    document.pop('_id', None)
+    if 'time_series' in document:
+        document['time_series'] = [HistoricDataPoint(**pt) for pt in document['time_series']]
+    if 'quarterly_earnings' in document:
+        document['quarterly_earnings'] = [QuarterlyEarning(**e) for e in document['quarterly_earnings']]
+    stock = Stock(**document)
+    return stock
+
+
+def _stock_to_document(stock: Stock) -> Dict:
+    document = stock._asdict()
+    document['time_series'] = [pt._asdict() for pt in stock.time_series]
+    document['quarterly_earnings'] = [e._asdict() for e in stock.quarterly_earnings]
+    return document

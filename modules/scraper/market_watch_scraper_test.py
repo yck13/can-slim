@@ -30,3 +30,10 @@ def test_get_time_series(scraper):
         assert point.volume > 0
         assert point.low <= point.open <= point.high
         assert point.low <= point.close <= point.high
+
+def test_get_quarterly_earnings(scraper):
+    quarterly_earnings = scraper.get_quarterly_earnings(ticker='HSBA', country_code='UK', iso_code='XLON', timeframe='P5Y')
+    assert len(quarterly_earnings) >= 20
+    for point in quarterly_earnings:
+        assert type(point.time) == datetime
+        assert point.value

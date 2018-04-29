@@ -10,8 +10,15 @@ class HistoricDataPoint(NamedTuple):
     close: float
     volume: float
 
+
 # type alias time series = list of historic data points
 TimeSeries = List[HistoricDataPoint]
+
+
+class QuarterlyEarning(NamedTuple):
+    time: datetime
+    value: float
+
 
 class Stock(NamedTuple):
     ticker: str
@@ -21,3 +28,4 @@ class Stock(NamedTuple):
     isin: str = None
     country_code: str = None
     time_series: TimeSeries = []
+    quarterly_earnings: List[QuarterlyEarning] = []
