@@ -46,4 +46,8 @@ def delete_stocks(tickers: Iterable[str]) -> None:
 
 def create_indexes() -> None:
     ticker_ts_index = IndexModel([('ticker', ASCENDING), ('time_series.time', ASCENDING)], unique=True)
-    _collection.create_indexes([ticker_ts_index])
+    name_index = IndexModel([('name', ASCENDING)], unique=True)
+    cusip_index = IndexModel([('cusip', ASCENDING)], unique=True)
+    isin_index = IndexModel([('isin', ASCENDING)], unique=True)
+    sedol_index = IndexModel([('sedol', ASCENDING)], unique=True)
+    _collection.create_indexes([ticker_ts_index, name_index, cusip_index, isin_index, sedol_index])
