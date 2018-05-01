@@ -15,7 +15,7 @@ class HistoricDataPoint(NamedTuple):
 TimeSeries = List[HistoricDataPoint]
 
 
-class QuarterlyEarning(NamedTuple):
+class EarningsEvent(NamedTuple):
     time: datetime
     value: float
 
@@ -28,4 +28,4 @@ class Stock(NamedTuple):
     isin: str = None
     country_code: str = None
     time_series: TimeSeries = []
-    quarterly_earnings: List[QuarterlyEarning] = []
+    quarterly_earnings: List[EarningsEvent] = []

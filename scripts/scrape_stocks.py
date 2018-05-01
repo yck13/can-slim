@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from itertools import repeat
 from timeit import default_timer as timer
-from typing import List
+from typing import List, Iterable
 
 from modules.core.db.collections.stock_collection import list_stocks, upsert_stocks, delete_stocks
 from modules.core.log import get_logger
@@ -23,7 +23,7 @@ def get_current_tickers() -> List[str]:
     return [s.ticker for s in current_stocks]
 
 
-def scrape_new_tickers_from(indices: List[Index]) -> List[str]:
+def scrape_new_tickers_from(indices: Iterable[Index]) -> List[str]:
     with ThreadPoolExecutor() as executor:
         futures = executor.map(lse_scraper.get_constituents, indices)
         tickers = [ticker for constituents in futures for ticker, _ in constituents]
@@ -61,8 +61,20 @@ def insert_into_database(stock: Stock) -> None:
 
 
 def scrape_stock_and_insert_into_database(ticker: str, country_code: str) -> None:
-    stock = scrape_stock(ticker, country_code)
-    insert_into_database(stock)
+    try:
+        stock = scrape_stock(ticker, country_code)
+        insert_into_database(stock)
+    except Exception:
+        log.exception('Failed to scrape ticker: {}'.format(ticker))
+
+
+def scrape_stocks_and_insert_into_database(tickers: Iterable[str], country_code: str) -> None:
+    with ThreadPoolExecutor() as executor:
+        futures = executor.map(scrape_stock_and_insert_into_database, tickers, repeat(country_code))
+
+    # loop through lazy generator to make sure no exceptions are raised
+    for _ in futures:
+        pass
 
 
 if __name__ == '__main__':
@@ -80,8 +92,7 @@ if __name__ == '__main__':
         delete_stocks(tickers_to_delete)
         log.info('Deleted obsolete tickers: {}'.format(tickers_to_delete))
 
-    with ThreadPoolExecutor() as executor:
-        executor.map(scrape_stock_and_insert_into_database, new_tickers, repeat(SCRAPE_TARGETS_COUNTRY_CODE))
+    scrape_stocks_and_insert_into_database(new_tickers, SCRAPE_TARGETS_COUNTRY_CODE)
 
     end_time = timer()
     log.info('Completed scraping {} stocks in {:.2f} seconds'.format(len(new_tickers), end_time - start_time))

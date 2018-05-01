@@ -1,11 +1,12 @@
 import json
 from typing import List, NamedTuple
+from warnings import warn, simplefilter
 
 import requests
 from pandas import to_datetime
 
 from modules.core import config
-from modules.core.model.stock import TimeSeries, HistoricDataPoint, QuarterlyEarning
+from modules.core.model.stock import TimeSeries, HistoricDataPoint, EarningsEvent
 
 
 class BasicStockInfo(NamedTuple):
@@ -130,7 +131,8 @@ class MarketWatchScraper:
         time_series = parse_response(response)
         return time_series
 
-    def get_quarterly_earnings(self, ticker: str, country_code: str, iso_code: str, timeframe: str = default_timeframe) -> List[QuarterlyEarning]:
+    def get_quarterly_earnings(self, ticker: str, country_code: str, iso_code: str,
+                               timeframe: str = default_timeframe) -> List[EarningsEvent]:
         """
         Returns quarterly earnings series for ticker (e.g. HSBA) given step and timeframe
         :param ticker: e.g. HSBA
@@ -139,12 +141,16 @@ class MarketWatchScraper:
         :param timeframe: e.g. P5Y for 5 years, if not supplied default will be used
         :return:
         """
+        simplefilter('always', DeprecationWarning)
+        warn("This method is deprecated as data is missing for many UK stocks", DeprecationWarning)
+
         EARNINGS_SERIES_ID = 'earnings'
 
         def open_page() -> str:
             url = 'https://api-secure.wsj.net/api/michelangelo/timeseries/history'
             options = {
-                'Step': 'P10Y', # since we are only interested in events, we try to get rid of irrelevant series data by using a large step
+                'Step': 'P10Y',
+                # since we are only interested in events, we try to get rid of irrelevant series data by using a large step
                 'TimeFrame': timeframe,
                 'EntitlementToken': MarketWatchScraper.entitlement_token,
                 'Series': [
@@ -174,10 +180,10 @@ class MarketWatchScraper:
             response = requests.get(url, params, headers=headers)
             return response.content
 
-        def parse_response(response_json: str) -> List[QuarterlyEarning]:
+        def parse_response(response_json: str) -> List[EarningsEvent]:
             data = json.loads(response_json)
             events = data['Events'][0]['DataPoints']
-            quarterly_earnings = [QuarterlyEarning(
+            quarterly_earnings = [EarningsEvent(
                 time=MarketWatchScraper._unix_to_datetime(event['EventDate']),
                 value=event['Value']
             ) for event in events]
@@ -186,6 +192,9 @@ class MarketWatchScraper:
         response = open_page()
         time_series = parse_response(response)
         return time_series
+
+    def get_annual_earnings(self, ticker: str, country_code: str):
+        pass
 
     @staticmethod
     def _unix_to_datetime(millis: int):

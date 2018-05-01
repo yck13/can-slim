@@ -3,7 +3,7 @@ from typing import List, Dict, Iterable
 from pymongo import ReplaceOne, IndexModel, ASCENDING
 
 from modules.core.db.conn import get_collection
-from modules.core.model.stock import Stock, HistoricDataPoint, QuarterlyEarning
+from modules.core.model.stock import Stock, HistoricDataPoint, EarningsEvent
 
 # database stock collections
 _collection = get_collection('stock')
@@ -44,7 +44,7 @@ def _document_to_stock(document: Dict) -> Stock:
     if 'time_series' in document:
         document['time_series'] = [HistoricDataPoint(**pt) for pt in document['time_series']]
     if 'quarterly_earnings' in document:
-        document['quarterly_earnings'] = [QuarterlyEarning(**e) for e in document['quarterly_earnings']]
+        document['quarterly_earnings'] = [EarningsEvent(**e) for e in document['quarterly_earnings']]
     stock = Stock(**document)
     return stock
 

@@ -5,7 +5,7 @@ import pytest
 
 from modules.core.db.collections import stock_collection
 from modules.core.db.collections.stock_collection import list_stocks, upsert_stocks, delete_stocks
-from modules.core.model.stock import Stock, HistoricDataPoint, QuarterlyEarning
+from modules.core.model.stock import Stock, HistoricDataPoint, EarningsEvent
 
 
 @pytest.fixture(autouse=True)
@@ -19,7 +19,7 @@ def test_list_stocks(mock_collection):
         ticker='AAPL',
         name='Apple',
         time_series=[HistoricDataPoint(time=datetime(2001, 1, 1), open=1, high=1, low=1, close=1, volume=100)],
-        quarterly_earnings=[QuarterlyEarning(time=datetime(2001, 1, 1), value=10)]
+        quarterly_earnings=[EarningsEvent(time=datetime(2001, 1, 1), value=10)]
     )
     aapl_dict = {
         'ticker': 'AAPL',
@@ -41,7 +41,7 @@ def test_upsert_stocks(mock_collection):
         ticker='AAPL',
         name='Apple',
         time_series=[HistoricDataPoint(time=datetime(2001, 1, 1), open=1, high=1, low=1, close=1, volume=100)],
-        quarterly_earnings=[QuarterlyEarning(time=datetime(2001, 1, 1), value=10)]
+        quarterly_earnings=[EarningsEvent(time=datetime(2001, 1, 1), value=10)]
     )
     goog = Stock(ticker='GOOG', name='Google')
     upsert_stocks([aapl, goog])
