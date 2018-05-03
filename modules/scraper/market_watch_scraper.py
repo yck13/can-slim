@@ -9,7 +9,7 @@ from modules.core import config
 from modules.core.model.stock import TimeSeries, HistoricDataPoint, EarningsEvent
 
 
-class BasicStockInfo(NamedTuple):
+class MWBasicStockInfo(NamedTuple):
     ticker: str
     name: str
     cusip: str
@@ -25,7 +25,7 @@ class MarketWatchScraper:
     default_step = config.get('scraper.market_watch.step')
     default_timeframe = config.get('scraper.market_watch.timeframe')
 
-    def get_basic_stock_info(self, ticker: str, country_code: str) -> BasicStockInfo:
+    def get_basic_stock_info(self, ticker: str, country_code: str) -> MWBasicStockInfo:
         """
         Returns the basic stock information for a ticker and country code (e.g. common name, cusip, isin...)
         :param ticker: e.g. HSBA
@@ -46,10 +46,10 @@ class MarketWatchScraper:
             response = requests.get(url, params)
             return response.content
 
-        def parse_response(response_json: str) -> BasicStockInfo:
+        def parse_response(response_json: str) -> MWBasicStockInfo:
             data = json.loads(response_json)
             instrument = data['GetInstrumentResponse']['InstrumentResponses'][0]['Matches'][0]['Instrument']
-            return BasicStockInfo(
+            return MWBasicStockInfo(
                 ticker=instrument['Ticker'],
                 name=instrument['CommonName'],
                 cusip=instrument['Cusip'],
